@@ -1,5 +1,12 @@
 # Quiet AWS News
 
+## How to Use
+
+1. Set up a new chime room
+2. Add a chime bot. Make note of the Webhook url
+3. Populate the `environment.dummy.json` file with your webhook url. Rename the file to `environment.json`
+3. Run make package, then make deploy
+
 ## What is this?
 
 Staying on top of AWS Announcements is tricky. There are a lot.

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -17,8 +18,8 @@ import (
 )
 
 const (
-	url     = "https://aws.amazon.com/new/feed/"
-	webhook = "https://hooks.chime.aws/incomingwebhooks/52bcd653-234a-4f19-ace7-06dab9238d15?token=RXB0aUtlemZ8MXxLSGNRUERqLUs1MVBYbzQwLUNnQ3hYR2VJcXNUbThFemt3SUFuM25iazlr"
+	url        = "https://aws.amazon.com/new/feed/"
+	ENVwebhook = "webhook"
 )
 
 var (
@@ -30,7 +31,15 @@ var (
 
 	// ErrNon200Response non 200 status code in response
 	ErrNon200Response = errors.New("Non 200 Response found")
+
+	// Destination Webhook
+	webhookURL string
 )
+
+func init() {
+	webhookURL = os.Getenv(ENVwebhook)
+	log.Printf("Using %v", webhookURL)
+}
 
 func handler() error {
 	fp := gofeed.NewParser()
@@ -56,8 +65,7 @@ func handler() error {
 			log.Printf("ERROR json.Marshal(): %v", err)
 			return err
 		}
-		fmt.Println(string(b))
-		req, err := http.NewRequest(http.MethodPost, webhook, bytes.NewReader(b))
+		req, err := http.NewRequest(http.MethodPost, webhookURL, bytes.NewReader(b))
 		req.Header.Add("Content-Type", "application/json")
 		if err != nil {
 			log.Printf("Error http.NewRequest(%b): %v", b, err)

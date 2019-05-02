@@ -40,11 +40,12 @@ func handler() error {
 		return err
 	}
 
-	feed = filterDate(feed)
-	feed = excludeRegion([]string{"Canada"})(feed)
+	opts := []filterFunc{filterDate}
+	for _, opt := range opts {
+		feed = opt(feed)
+	}
 
 	client := http.Client{}
-
 	for _, item := range feed.Items {
 		c := post{
 			Content: buildContent(item),
@@ -87,20 +88,34 @@ func filterDate(f *gofeed.Feed) *gofeed.Feed {
 	f.Items = newItems
 	return f
 }
-
-func excludeRegion(regions []string) filterFunc {
-	containsRegion := func(item *gofeed.Item) bool {
-		for _, r := range regions {
-			if strings.Contains(item.Title, r) {
-				return true
-			}
+func containsRegion(item *gofeed.Item, regions []string) bool {
+	for _, r := range regions {
+		if strings.Contains(item.Title, r) {
+			return true
 		}
-		return false
 	}
+	return false
+}
+
+func excludeRegion(regions ...string) filterFunc {
 	return func(f *gofeed.Feed) *gofeed.Feed {
 		var newItems []*gofeed.Item
 		for _, item := range f.Items {
-			if !containsRegion(item) {
+			if !containsRegion(item, regions) {
+				newItems = append(newItems, item)
+			}
+		}
+		f.Items = newItems
+		return f
+	}
+}
+
+func includeRegion(region ...string) filterFunc {
+	return func(f *gofeed.Feed) *gofeed.Feed {
+		var newItems []*gofeed.Item
+
+		for _, item := range f.Items {
+			if containsRegion(item, region) {
 				newItems = append(newItems, item)
 			}
 		}
@@ -118,6 +133,7 @@ type post struct {
 func buildContent(item *gofeed.Item) string {
 	var b bytes.Buffer
 
+	// Signal markdown content
 	b.WriteString("/md ")
 
 	b.WriteString(italics(item.Published) + "\n")

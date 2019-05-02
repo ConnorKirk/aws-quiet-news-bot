@@ -18,4 +18,5 @@ deploy:
 		--template-file /Users/ckp/go/src/github.com/ConnorKirk/aws-quiet-news-bot/packaged.yaml \
 		--stack-name quiet-aws-news \
 		--capabilities CAPABILITY_IAM \
-		--profile $(AWS_PROFILE)
+		--profile $(AWS_PROFILE) \
+		--env-vars environment.json

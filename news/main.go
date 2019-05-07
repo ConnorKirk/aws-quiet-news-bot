@@ -42,6 +42,7 @@ func init() {
 }
 
 func handler() error {
+	// get RSS feed
 	fp := gofeed.NewParser()
 	feed, err := fp.ParseURL(url)
 	if err != nil {
@@ -49,11 +50,13 @@ func handler() error {
 		return err
 	}
 
+	// filter RSS feed
 	opts := []filterFunc{filterDate}
 	for _, opt := range opts {
 		feed = opt(feed)
 	}
 
+	// Process Feed Items
 	client := http.Client{}
 	for _, item := range feed.Items {
 		c := post{
@@ -65,6 +68,8 @@ func handler() error {
 			log.Printf("ERROR json.Marshal(): %v", err)
 			return err
 		}
+
+		// Send request
 		req, err := http.NewRequest(http.MethodPost, webhookURL, bytes.NewReader(b))
 		req.Header.Add("Content-Type", "application/json")
 		if err != nil {
@@ -83,6 +88,7 @@ func main() {
 
 type filterFunc func(*gofeed.Feed) *gofeed.Feed
 
+// filterDate excludes all items older than 24 hours
 func filterDate(f *gofeed.Feed) *gofeed.Feed {
 	var newItems []*gofeed.Item
 	for _, i := range f.Items {
@@ -96,15 +102,18 @@ func filterDate(f *gofeed.Feed) *gofeed.Feed {
 	f.Items = newItems
 	return f
 }
-func containsRegion(item *gofeed.Item, regions []string) bool {
-	for _, r := range regions {
-		if strings.Contains(item.Title, r) {
+
+func containsRegion(item *gofeed.Item, checkRegion []string) bool {
+	for _, r := range checkRegion {
+		if strings.Contains(item.Title, regions[r]) {
 			return true
 		}
 	}
 	return false
 }
 
+// excludeRegion takes a feed containing a list of items
+// If an item contains an excluded region, it is removed from the list
 func excludeRegion(regions ...string) filterFunc {
 	return func(f *gofeed.Feed) *gofeed.Feed {
 		var newItems []*gofeed.Item
@@ -118,16 +127,22 @@ func excludeRegion(regions ...string) filterFunc {
 	}
 }
 
-func includeRegion(region ...string) filterFunc {
+// excludeAllExcept removes
+func excludeAllExcept(keepRegions ...string) filterFunc {
 	return func(f *gofeed.Feed) *gofeed.Feed {
-		var newItems []*gofeed.Item
 
-		for _, item := range f.Items {
-			if containsRegion(item, region) {
-				newItems = append(newItems, item)
+	excludeLoop:
+
+		for _, r := range regions {
+
+			// Skip excluding kept regions
+			for _, keepRegion := range keepRegions {
+				if regions[keepRegion] == r {
+					continue excludeLoop
+				}
 			}
+			f = excludeRegion(r)(f)
 		}
-		f.Items = newItems
 		return f
 	}
 }

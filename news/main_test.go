@@ -6,36 +6,81 @@ import (
 	"github.com/mmcdole/gofeed"
 )
 
-func TestIncludeRegion(t *testing.T) {
+func TestExcludeRegion(t *testing.T) {
 	feed := newFeed()
-	blameCanada := includeRegion(cacentral1)
+	blameCanada := excludeRegion("cacentral1")
 	feed = blameCanada(feed)
 	got := len(feed.Items)
-	want := 1
+	want := 2
 	if got != want {
 		t.Errorf("Expected Length()=%v; got=%v", want, got)
 	}
 }
 
-func TestExcludeRegion(t *testing.T) {
+func TestExcludeRegionExcept(t *testing.T) {
 	feed := newFeed()
-	blameCanada := excludeRegion(cacentral1)
-	feed = blameCanada(feed)
-	got := len(feed.Items)
-	want := 0
+	keep := excludeAllExcept("euwest1")(feed)
+	got := len(keep.Items)
+	want := 1
 	if got != want {
 		t.Errorf("Expected Length()=%v; got=%v", want, got)
 	}
+
 }
 
 func newFeed() *gofeed.Feed {
 	i := &gofeed.Item{
 		Title: "Blame Canada",
 	}
+	j := &gofeed.Item{
+		Title: "New Service in Dublin",
+	}
+	k := &gofeed.Item{
+		Title: "New Service in Ohio",
+	}
 
 	return &gofeed.Feed{
 		Items: []*gofeed.Item{
 			i,
+			j,
+			k,
 		},
+	}
+}
+
+func TestContainsRegion(t *testing.T) {
+	type args struct {
+		item        *gofeed.Item
+		checkRegion []string
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "Test True",
+			args: args{
+				item:        newFeed().Items[0],
+				checkRegion: []string{"euwest1", "cacentral1"},
+			},
+			want: true,
+		},
+		{
+			name: "Test False",
+			args: args{
+				item:        newFeed().Items[0],
+				checkRegion: []string{"euwest1", "euwest2"},
+			},
+			want: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := containsRegion(tt.args.item, tt.args.checkRegion); got != tt.want {
+				t.Errorf("containsRegion() = %v, want %v", got, tt.want)
+			}
+		})
 	}
 }

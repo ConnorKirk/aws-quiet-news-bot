@@ -119,7 +119,7 @@ func filterDate(d time.Duration) filterFunc {
 			published := *i.PublishedParsed
 			now := time.Now()
 			if now.Sub(published) > d {
-				break
+				continue
 			}
 			newItems = append(newItems, i)
 		}

@@ -61,41 +61,52 @@ func handler() error {
 	// Process Feed Items
 	client := http.Client{}
 	for _, item := range feed.Items {
-		c := post{
-			Content: buildContent(item),
-		}
-
-		b, err := json.Marshal(c)
-		if err != nil {
-			log.Printf("ERROR json.Marshal(): %v", err)
-			return err
-		}
-
-		// Send request
-		req, err := http.NewRequest(http.MethodPost, webhookURL, bytes.NewReader(b))
-		req.Header.Add("Content-Type", "application/json")
-		if err != nil {
-			log.Printf("Error http.NewRequest(%b): %v", b, err)
-			return err
-		}
-		resp, err := client.Do(req)
-		if err != nil {
-			log.Printf("error client.Do(): %v", err)
-			return err
-		}
-		if resp.StatusCode != 200 {
-			log.Printf("err client.Do(): non 200 status code: %v - %s", resp.StatusCode, resp.Status)
-		}
+		err = postItem(client, item)
 
 		// Respect the rate limit
 		time.Sleep(1 * time.Second)
 
 	}
-	return nil
+	return err
 }
 
 func main() {
 	lambda.Start(handler)
+}
+
+func postItem(client http.Client, item *gofeed.Item) error {
+	c := struct {
+		Content string
+	}{
+		Content: buildContent(item),
+	}
+
+	b, err := json.Marshal(c)
+	if err != nil {
+		log.Printf("ERROR json.Marshal(): %v", err)
+		return err
+	}
+
+	// Buil Request
+	req, err := http.NewRequest(http.MethodPost, webhookURL, bytes.NewReader(b))
+	req.Header.Add("Content-Type", "application/json")
+	if err != nil {
+		log.Printf("Error http.NewRequest(%b): %v", b, err)
+		return err
+	}
+
+	// Send Request
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Printf("error client.Do(): %v", err)
+		return err
+	}
+	if resp.StatusCode != 200 {
+		log.Printf("err client.Do(): non 200 status code: %v - %s", resp.StatusCode, resp.Status)
+		return err
+	}
+
+	return nil
 }
 
 type filterFunc func(*gofeed.Feed)

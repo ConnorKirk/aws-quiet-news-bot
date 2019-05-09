@@ -3,7 +3,7 @@ Transform: AWS::Serverless-2016-10-31
 Description: >
   Quiet AWS News
   
-  AWS What's New, but only for what you're interested in
+  AWS What's New, but only for what you're interested in.
 
 Parameters:
   webhookurl:

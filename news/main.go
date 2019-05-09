@@ -79,6 +79,7 @@ func handler() error {
 		log.Printf("No items to display")
 	}
 
+	// Sort by Published Date
 	sort.Slice(feed.Items,
 		func(i, j int) bool {
 			return feed.Items[i].PublishedParsed.Sub(*feed.Items[j].PublishedParsed) < 0

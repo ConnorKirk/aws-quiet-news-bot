@@ -9,7 +9,7 @@ import (
 func TestExcludeRegion(t *testing.T) {
 	feed := newFeed()
 	blameCanada := excludeRegion("cacentral1")
-	feed = blameCanada(feed)
+	blameCanada(feed)
 	got := len(feed.Items)
 	want := 2
 	if got != want {
@@ -19,8 +19,8 @@ func TestExcludeRegion(t *testing.T) {
 
 func TestExcludeRegionExcept(t *testing.T) {
 	feed := newFeed()
-	keep := excludeAllExcept("euwest1")(feed)
-	got := len(keep.Items)
+	excludeAllExcept("euwest1")(feed)
+	got := len(feed.Items)
 	want := 1
 	if got != want {
 		t.Errorf("Expected Length()=%v; got=%v", want, got)

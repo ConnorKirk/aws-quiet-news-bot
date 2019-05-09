@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -44,9 +43,13 @@ func handler() error {
 	}
 
 	// filter RSS feed
-	opts := []filterFunc{filterDate}
+	opts := []filterFunc{filterDate(timeWindow)}
 	for _, opt := range opts {
-		feed = opt(feed)
+		opt(feed)
+	}
+
+	if len(feed.Items) == 0 {
+		log.Printf("No items to display")
 	}
 
 	// Process Feed Items
@@ -69,7 +72,17 @@ func handler() error {
 			log.Printf("Error http.NewRequest(%b): %v", b, err)
 			return err
 		}
-		client.Do(req)
+		resp, err := client.Do(req)
+		if err != nil {
+			log.Printf("error client.Do(): %v", err)
+			return err
+		}
+		if resp.StatusCode != 200 {
+			log.Printf("err client.Do(): non 200 status code: %v - %s", resp.StatusCode, resp.Status)
+		}
+
+		// Respect the rate limit
+		time.Sleep(1 * time.Second)
 
 	}
 	return nil

@@ -1,3 +1,4 @@
 environment.json
 bin/
 packaged.yaml
+deploy.fake

@@ -23,8 +23,7 @@ const (
 )
 
 var (
-	// DefaultHTTPGetAddress Default Address
-	DefaultHTTPGetAddress = "https://checkip.amazonaws.com"
+	timeWindow = 24 * time.Hour
 
 	// ErrNoIP No IP found in response
 	ErrNoIP = errors.New("No IP in HTTP response")
@@ -86,21 +85,22 @@ func main() {
 	lambda.Start(handler)
 }
 
-type filterFunc func(*gofeed.Feed) *gofeed.Feed
+type filterFunc func(*gofeed.Feed)
 
-// filterDate excludes all items older than 24 hours
-func filterDate(f *gofeed.Feed) *gofeed.Feed {
-	var newItems []*gofeed.Item
-	for _, i := range f.Items {
-		published := *i.PublishedParsed
-		now := time.Now()
-		if now.Sub(published) > 24*time.Hour {
-			break
+// filterDate excludes all items older than the provided duration
+func filterDate(d time.Duration) filterFunc {
+	return func(f *gofeed.Feed) {
+		var newItems []*gofeed.Item
+		for _, i := range f.Items {
+			published := *i.PublishedParsed
+			now := time.Now()
+			if now.Sub(published) > d {
+				break
+			}
+			newItems = append(newItems, i)
 		}
-		newItems = append(newItems, i)
+		f.Items = newItems
 	}
-	f.Items = newItems
-	return f
 }
 
 func containsRegion(item *gofeed.Item, checkRegion []string) bool {
@@ -115,7 +115,7 @@ func containsRegion(item *gofeed.Item, checkRegion []string) bool {
 // excludeRegion takes a feed containing a list of items
 // If an item contains an excluded region, it is removed from the list
 func excludeRegion(regions ...string) filterFunc {
-	return func(f *gofeed.Feed) *gofeed.Feed {
+	return func(f *gofeed.Feed) {
 		var newItems []*gofeed.Item
 		for _, item := range f.Items {
 			if !containsRegion(item, regions) {
@@ -123,13 +123,12 @@ func excludeRegion(regions ...string) filterFunc {
 			}
 		}
 		f.Items = newItems
-		return f
 	}
 }
 
 // excludeAllExcept removes
 func excludeAllExcept(keepRegions ...string) filterFunc {
-	return func(f *gofeed.Feed) *gofeed.Feed {
+	return func(f *gofeed.Feed) {
 
 	excludeLoop:
 
@@ -141,9 +140,9 @@ func excludeAllExcept(keepRegions ...string) filterFunc {
 					continue excludeLoop
 				}
 			}
-			f = excludeRegion(r)(f)
+
+			excludeRegion(r)(f)
 		}
-		return f
 	}
 }
 

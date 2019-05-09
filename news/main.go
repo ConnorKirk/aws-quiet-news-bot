@@ -170,10 +170,6 @@ func excludeAllExcept(keepRegions ...string) filterFunc {
 	}
 }
 
-type post struct {
-	Content string
-}
-
 // buildContent takes an item and returns a markdown formatted
 // string containing the publish date, title and description
 func buildContent(item *gofeed.Item) string {

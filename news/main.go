@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sort"
 	"strings"
 	"time"
 
@@ -51,6 +52,11 @@ func handler() error {
 	if len(feed.Items) == 0 {
 		log.Printf("No items to display")
 	}
+
+	sort.Slice(feed.Items,
+		func(i, j int) bool {
+			return feed.Items[i].PublishedParsed.Sub(*feed.Items[j].PublishedParsed) < 0
+		})
 
 	// Process Feed Items
 	client := http.Client{}

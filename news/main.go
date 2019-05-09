@@ -6,10 +6,11 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"sort"
 	"strings"
 	"time"
+
+	"github.com/spf13/viper"
 
 	"github.com/lunny/html2md"
 
@@ -18,33 +19,58 @@ import (
 )
 
 const (
-	url        = "https://aws.amazon.com/new/feed/"
-	ENVwebhook = "webhook"
+	// Viper Keys
+	vPrefix           = "news"
+	vInputFeedURL     = "INPUT_FEED_URL"
+	vOutputWebHookURL = "OUTPUT_WEBHOOK_URL"
+	vTimeWindowDays   = "TIME_WINDOW_DAYS"
+
+	// Defaults
+	defaultInputFeedURL   = "https://aws.amazon.com/new/feed/"
+	defaultTimeWindowDays = 1
 )
 
 var (
-	timeWindow = 24 * time.Hour
-
-	// Destination Webhook
-	webhookURL string
+	webhookURL     string        // URL to post to
+	feedURL        string        // URL to get RSS feed from
+	timeWindowDays int           // Number of days in the window
+	window         time.Duration // Length of window in seconds
 )
 
 func init() {
-	webhookURL = os.Getenv(ENVwebhook)
-	log.Printf("Using %v", webhookURL)
+	viper.SetEnvPrefix(vPrefix)
+	viper.SetDefault(vInputFeedURL, defaultInputFeedURL)
+	viper.SetDefault(vTimeWindowDays, defaultTimeWindowDays)
+
+	err := viper.BindEnv(vInputFeedURL)
+	if err != nil {
+		panic(err)
+	}
+	err = viper.BindEnv(vOutputWebHookURL)
+	if err != nil {
+		panic(err)
+	}
+	err = viper.BindEnv(vTimeWindowDays)
+	if err != nil {
+		panic(err)
+	}
+	webhookURL = viper.GetString(vOutputWebHookURL)
+	feedURL = viper.GetString(vInputFeedURL)
+	timeWindowDays = viper.GetInt(vTimeWindowDays)
+	window = time.Duration(timeWindowDays) * 24 * time.Hour
 }
 
 func handler() error {
 	// get RSS feed
 	fp := gofeed.NewParser()
-	feed, err := fp.ParseURL(url)
+	feed, err := fp.ParseURL(feedURL)
 	if err != nil {
-		log.Printf("Error ParseURL(%v): %v", url, err)
+		log.Printf("Error ParseURL(%v): %v", feedURL, err)
 		return err
 	}
 
 	// filter RSS feed
-	opts := []filterFunc{filterDate(timeWindow)}
+	opts := []filterFunc{filterDate(window)}
 	for _, opt := range opts {
 		opt(feed)
 	}
@@ -183,7 +209,7 @@ func buildContent(item *gofeed.Item) string {
 	b.WriteString(link(item.Title, item.Link) + "\n")
 
 	desc := html2md.Convert(item.Description)
-	b.WriteString(desc)
+	b.WriteString(strings.TrimSpace(desc))
 	return b.String()
 }
 

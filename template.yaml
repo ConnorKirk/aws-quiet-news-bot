@@ -38,8 +38,10 @@ Resources:
 
       Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
         Variables:
-          webhook: 
+          NEWS_OUTPUT_WEBHOOK_URL: 
             Ref: webhookurl
+          NEWS_INPUT_FEED_URL: ""
+          NEWS_TIME_WINDOW_DAYS: ""
 
 Outputs:
   newsFunc:

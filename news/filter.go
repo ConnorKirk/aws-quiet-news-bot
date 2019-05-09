@@ -25,22 +25,17 @@ func filterDate(d time.Duration) filterFunc {
 	}
 }
 
-func containsRegion(item *gofeed.Item, checkRegion []string) bool {
-	for _, r := range checkRegion {
-		if strings.Contains(item.Title, regions[r]) {
-			return true
-		}
-	}
-	return false
+func containsRegion(item *gofeed.Item, checkRegion string) bool {
+	return strings.Contains(strings.ToLower(item.Title), strings.ToLower(regions[checkRegion]))
 }
 
 // excludeRegion takes a feed containing a list of items
 // If an item contains an excluded region, it is removed from the list
-func excludeRegion(regions ...string) filterFunc {
+func excludeRegion(region string) filterFunc {
 	return func(f *gofeed.Feed) {
 		var newItems []*gofeed.Item
 		for _, item := range f.Items {
-			if !containsRegion(item, regions) {
+			if !containsRegion(item, region) {
 				newItems = append(newItems, item)
 			}
 		}
@@ -56,7 +51,7 @@ func excludeAllExcept(keepRegions ...string) filterFunc {
 
 		for _, r := range regions {
 
-			// Skip excluding kept regions
+			// Dont exclude kept regions
 			for _, keepRegion := range keepRegions {
 				if regions[keepRegion] == r {
 					continue excludeLoop
@@ -66,4 +61,17 @@ func excludeAllExcept(keepRegions ...string) filterFunc {
 			excludeRegion(r)(f)
 		}
 	}
+}
+
+func getRegions(item *gofeed.Item) (regions []string, ok bool) {
+	// ok itialises to false
+	ok = false
+	for _, region := range regions {
+		if strings.Contains(strings.ToLower(item.Description), strings.ToLower(region)) {
+			regions = append(regions, region)
+			ok = true
+		}
+	}
+
+	return regions, ok
 }

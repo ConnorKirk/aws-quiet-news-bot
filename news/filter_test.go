@@ -51,7 +51,7 @@ func newFeed() *gofeed.Feed {
 func TestContainsRegion(t *testing.T) {
 	type args struct {
 		item        *gofeed.Item
-		checkRegion []string
+		checkRegion string
 	}
 	tests := []struct {
 		name string
@@ -62,7 +62,7 @@ func TestContainsRegion(t *testing.T) {
 			name: "Test True",
 			args: args{
 				item:        newFeed().Items[0],
-				checkRegion: []string{"euwest1", "cacentral1"},
+				checkRegion: "cacentral1",
 			},
 			want: true,
 		},
@@ -70,7 +70,7 @@ func TestContainsRegion(t *testing.T) {
 			name: "Test False",
 			args: args{
 				item:        newFeed().Items[0],
-				checkRegion: []string{"euwest1", "euwest2"},
+				checkRegion: "euwest2",
 			},
 			want: false,
 		},

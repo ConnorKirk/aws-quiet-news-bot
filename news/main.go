@@ -182,8 +182,9 @@ func buildContent(item *gofeed.Item) string {
 	// Signal markdown content
 	b.WriteString("/md ")
 
-	b.WriteString(italics(item.Published) + "\n")
-	b.WriteString(link(item.Title, item.Link) + "\n\n")
+	const format = "2006-01-02"
+	b.WriteString(italics(item.PublishedParsed.Format(format)) + "\n")
+	b.WriteString(link(item.Title, item.Link) + "\n")
 
 	desc := html2md.Convert(item.Description)
 	b.WriteString(desc)

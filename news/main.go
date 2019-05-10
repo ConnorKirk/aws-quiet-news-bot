@@ -101,6 +101,7 @@ func main() {
 	lambda.Start(handler)
 }
 
+// postItem formats an RSS item and posts it to the chime webhook
 func postItem(client http.Client, item *gofeed.Item) error {
 	c := struct {
 		Content string

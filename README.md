@@ -6,8 +6,6 @@ Staying on top of AWS Announcements is tricky. There are a lot.
 
 This lambda polls the AWS Whats new RSS feed every 24 hours. For anything published in the previous 24 hours, it publishes it in a chime channel.
 
-The fancy part is that you can (attempt) to specify only the regions you are interested in.
-
 ## How to Use
 
 1. [Create a new chime room](https://docs.aws.amazon.com/chime/latest/ug/chime-chat-room.html)
@@ -17,20 +15,22 @@ The fancy part is that you can (attempt) to specify only the regions you are int
 
 
 ## Environment Variables
-webhook: Webhook URL to post to (from step 2)
+`NEWS_OUTPUT_WEBHOOK_URL` - Chime Webhook URL
+`NEWS_INPUT_FEED_URL` - Optional - Alternative AWS Whats New RSS Feed URL
+`NEWS_TIME_WINDOW_DAYS` - Optional - Window size to filter RSS posts
 
 ## Local Development Workflow
 
-Create a local `environment.json` file to contain your local environment variables. **Don't check this in** 
+Create a `environment.json` file to contain your local environment variables. **Don't check this in** 
 
-Build with `make build`
-Start local testing with `make local`
-Package with `make package`
-Deploy with `make deploy`
+* Build with `make build`  
+* Start local testing with `make local`  
+* Package with `make package`  
+* Deploy with `make deploy`
 
 ## Deploying
 
-Remember to set an environment variable `webhook` in the lambda
+Remember to set an environment variable `NEWS_OUTPUT_WEBHOOK_URL` in the lambda
 
 
 ### What is `deploy.fake`?

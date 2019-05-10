@@ -1,6 +1,8 @@
 {
     "newsFunc":
     {
-        "webhook": "<Add your webhook here>"
+        "NEWS_OUTPUT_WEBHOOK_URL": "<string -chime webhook url>",
+        "NEWS_INPUT_FEED_URL": "<string - optional - AWS Whats New RSS Feed URL>",
+        "NEWS_TIME_WINDOW_DAYS": "<int - optional - Window size for retrieving posts>"
     }
 }

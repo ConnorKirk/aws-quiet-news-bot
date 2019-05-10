@@ -33,3 +33,8 @@ Deploy with `make deploy`
 Remember to set an environment variable `webhook` in the lambda
 
 
+### What is `deploy.fake`?
+
+`make` works by building a target file if any of the files dependencies have changed. If the target file doesn't exist, then `make` will always run the process. `deploy.fake` acts as the target file for make to build. When `make deploy` or `make deploy.fake` is run, it will only perform the deployment process if any of it's dependencies have changed.
+
+

@@ -15,9 +15,9 @@ This lambda polls the AWS Whats new RSS feed every 24 hours. For anything publis
 
 
 ## Environment Variables
-`NEWS_OUTPUT_WEBHOOK_URL` - Chime Webhook URL
-`NEWS_INPUT_FEED_URL` - Optional - Alternative AWS Whats New RSS Feed URL
-`NEWS_TIME_WINDOW_DAYS` - Optional - Window size to filter RSS posts
+* `NEWS_OUTPUT_WEBHOOK_URL` - Chime Webhook URL
+* `NEWS_INPUT_FEED_URL` - Optional - Alternative AWS Whats New RSS Feed URL
+* `NEWS_TIME_WINDOW_DAYS` - Optional - Window size to filter RSS posts
 
 ## Local Development Workflow
 
